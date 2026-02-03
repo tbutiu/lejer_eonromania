@@ -70,7 +70,7 @@ class TrimiteIndexButton(ButtonEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }

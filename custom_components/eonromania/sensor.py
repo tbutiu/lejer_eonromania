@@ -233,7 +233,7 @@ class DateContractSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -393,7 +393,7 @@ class CitireIndexSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -539,7 +539,7 @@ class FacturaRestantaSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -659,7 +659,7 @@ class ArhivaSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -770,7 +770,7 @@ class ArhivaPlatiSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -898,7 +898,7 @@ class CitirePermisaSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -1005,7 +1005,7 @@ class ConventieConsumSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }
@@ -1116,7 +1116,7 @@ class ArhivaComparareConsumAnualGraficSensor(CoordinatorEntity, SensorEntity):
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
-            "manufacturer": "Ciprian Nicolae (cnecrea)",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
             "entry_type": DeviceEntryType.SERVICE,
         }

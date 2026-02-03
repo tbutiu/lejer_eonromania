@@ -2,13 +2,13 @@
   "domain": "eonromania",
   "name": "E-ON România",
   "codeowners": [
-    "@cnecrea"
+    "@tbutiu"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/cnecrea/eonromania",
+  "documentation": "https://github.com/tbutiu/eonromania",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/cnecrea/eonromania/issues",
+  "issue_tracker": "https://github.com/tbutiu/eonromania/issues",
   "requirements": [],
   "version": "1.5.3"
 }

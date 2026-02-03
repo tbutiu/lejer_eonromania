@@ -131,12 +131,12 @@ Atribute:
 ## 🚀 Instalare
 
 ### 💡 Instalare prin HACS:
-1. Adaugă [depozitul personalizat](https://github.com/cnecrea/eonromania) în HACS. 🛠️
+1. Adaugă [depozitul personalizat](https://github.com/tbutiu/eonromania) în HACS. 🛠️
 2. Caută integrarea **E-ON România** și instaleaz-o. ✅
 3. Repornește Home Assistant și configurează integrarea. 🔄
 
 ### ✋ Instalare manuală:
-1. Clonează sau descarcă [depozitul GitHub](https://github.com/cnecrea/eonromania). 📂
+1. Clonează sau descarcă [depozitul GitHub](https://github.com/tbutiu/eonromania). 📂
 2. Copiază folderul `custom_components/eonromania` în directorul `custom_components` al Home Assistant. 🗂️
 3. Repornește Home Assistant și configurează integrarea. 🔧
 
@@ -200,7 +200,7 @@ Consultă fișierul [FAQ.md](./FAQ.md) pentru ghiduri detaliate și soluții pas
 Dacă ți-a plăcut această integrare și vrei să sprijini munca depusă, **invită-mă la o cafea**! 🫶  
 Nu costă nimic, iar contribuția ta ajută la dezvoltarea viitoare a proiectului. 🙌  
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Susține%20dezvoltatorul-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/cnecrea)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Susține%20dezvoltatorul-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/tbutiu)
 
 Mulțumesc pentru sprijin și apreciez fiecare gest de susținere! 🤗
 
@@ -209,9 +209,9 @@ Mulțumesc pentru sprijin și apreciez fiecare gest de susținere! 🤗
 
 ## 🧑‍💻 Contribuții
 
-Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau să raportezi probleme [aici](https://github.com/cnecrea/eonromania/issues).
+Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau să raportezi probleme [aici](https://github.com/tbutiu/eonromania/issues).
 
 ---
 
 ## 🌟 Suport
-Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/cnecrea/eonromania/)! 😊
+Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/tbutiu/eonromania/)! 😊

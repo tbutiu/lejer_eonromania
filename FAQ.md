@@ -316,7 +316,7 @@ Pentru a reveni la începutul paginii, [apăsați aici](#top).
   - **Oferă un star pe GitHub** – Apasă butonul **“Star”** de pe pagina repository-ului pentru a arăta aprecierea ta.
   - **Contribuie cu cod** – Dacă ai idei sau îmbunătățiri, poți crea un pull request cu modificările propuse.
   - **Raportează probleme** – Dacă întâmpini bug-uri sau ai sugestii, deschide un issue pe GitHub.
-  - **Donează** – Dacă dorești să sprijini proiectul financiar, poți face o donație prin intermediul [Buy Me a Coffee](https://buymeacoffee.com/cnecrea). Orice contribuție este apreciată și ajută la dezvoltarea proiectului!
+  - **Donează** – Dacă dorești să sprijini proiectul financiar, poți face o donație prin intermediul [Buy Me a Coffee](https://buymeacoffee.com/tbutiu). Orice contribuție este apreciată și ajută la dezvoltarea proiectului!
   - **Distribuie proiectul** – Recomandă-l prietenilor sau comunității tale pentru a crește vizibilitatea.
 
 
