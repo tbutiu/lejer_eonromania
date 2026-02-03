@@ -131,13 +131,13 @@ Atribute:
 ## 🚀 Instalare
 
 ### 💡 Instalare prin HACS:
-1. Adaugă [depozitul personalizat](https://github.com/tbutiu/eonromania) în HACS. 🛠️
+1. Adaugă [depozitul personalizat](https://github.com/tbutiu/lejer_eonromania) în HACS. 🛠️
 2. Caută integrarea **E-ON România** și instaleaz-o. ✅
 3. Repornește Home Assistant și configurează integrarea. 🔄
 
 ### ✋ Instalare manuală:
-1. Clonează sau descarcă [depozitul GitHub](https://github.com/tbutiu/eonromania). 📂
-2. Copiază folderul `custom_components/eonromania` în directorul `custom_components` al Home Assistant. 🗂️
+1. Clonează sau descarcă [depozitul GitHub](https://github.com/tbutiu/lejer_eonromania). 📂
+2. Copiază folderul `custom_components/lejer_eonromania` în directorul `custom_components` al Home Assistant. 🗂️
 3. Repornește Home Assistant și configurează integrarea. 🔧
 
 ---
@@ -152,13 +152,13 @@ alias: Notificare Index Ridicat
 description: Notificare dacă indexul depășește 1000
 trigger:
   - platform: numeric_state
-    entity_id: sensor.eonromania_index_curent_00XXXXXXXXXX
+    entity_id: sensor.lejer_eonromania_index_curent_00XXXXXXXXXX
     above: 1000
 action:
   - service: notify.mobile_app_your_phone
     data:
       title: "Index Ridicat Detectat! ⚡"
-      message: "Indexul curent este {{ states('sensor.eonromania_index_curent_00XXXXXXXXXX') }}."
+      message: "Indexul curent este {{ states('sensor.lejer_eonromania_index_curent_00XXXXXXXXXX') }}."
 mode: single
 ```
 
@@ -169,11 +169,11 @@ Afișează datele despre contract, indexuri și arhivă pe interfața Home Assis
 type: entities
 title: Monitorizare E-ON România
 entities:
-  - entity: sensor.eonromania_date_contract_00XXXXXXXXXX
+  - entity: sensor.lejer_eonromania_date_contract_00XXXXXXXXXX
     name: Date Contract
-  - entity: sensor.eonromania_index_curent_00XXXXXXXXXX
+  - entity: sensor.lejer_eonromania_index_curent_00XXXXXXXXXX
     name: Index Curent
-  - entity: sensor.eonromania_arhiva_index_00XXXXXXXXXX_2024
+  - entity: sensor.lejer_eonromania_arhiva_index_00XXXXXXXXXX_2024
     name: Arhivă 2024
 ```
 
@@ -209,9 +209,9 @@ Mulțumesc pentru sprijin și apreciez fiecare gest de susținere! 🤗
 
 ## 🧑‍💻 Contribuții
 
-Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau să raportezi probleme [aici](https://github.com/tbutiu/eonromania/issues).
+Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau să raportezi probleme [aici](https://github.com/tbutiu/lejer_eonromania/issues).
 
 ---
 
 ## 🌟 Suport
-Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/tbutiu/eonromania/)! 😊
+Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/tbutiu/lejer_eonromania/)! 😊

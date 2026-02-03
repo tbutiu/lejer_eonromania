@@ -135,7 +135,29 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
             for year, monthly_values in cleaned_yearly_data.items():
                 sensors.append(ArhivaComparareConsumAnualGraficSensor(coordinator, config_entry, year, monthly_values))
 
-    # 7. Înregistrăm senzorii în Home Assistant
+    # 7. Gestionăm FacturaSoldProsum (EonInvoiceBalanceProsumSensor)
+    facturasold_prosum = coordinator.data.get("facturasold_prosum")
+    if facturasold_prosum:
+         sensors.append(EonInvoiceBalanceProsumSensor(coordinator, config_entry))
+
+    # 8. Gestionăm Wallet (EonUserWalletSensor)
+    wallet_data = coordinator.data.get("user_wallet")
+    if wallet_data:
+         # Verificam daca avem date valide in wallet
+         if wallet_data.get("balance") is not None:
+             sensors.append(EonUserWalletSensor(coordinator, config_entry))
+
+    # 9. Gestionăm Rescheduling Plans
+    rescheduling_data = coordinator.data.get("rescheduling_plans")
+    if rescheduling_data:
+         sensors.append(EonReschedulingPlanSensor(coordinator, config_entry))
+
+    # 10. Gestionăm Payment Notices
+    notices_data = coordinator.data.get("payment_notices")
+    if notices_data:
+         sensors.append(EonPaymentNoticeSensor(coordinator, config_entry))
+
+    # 11. Înregistrăm senzorii în Home Assistant
     async_add_entities(sensors)
 
 
@@ -1113,6 +1135,258 @@ class ArhivaComparareConsumAnualGraficSensor(CoordinatorEntity, SensorEntity):
 
         full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
 
+        return {
+            "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
+            "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
+            "model": "E-ON România",
+            "entry_type": DeviceEntryType.SERVICE,
+        }
+
+
+# ------------------------------------------------------------------------
+# EonInvoiceBalanceProsumSensor
+# ------------------------------------------------------------------------
+class EonInvoiceBalanceProsumSensor(CoordinatorEntity, SensorEntity):
+    """Senzor pentru afișarea soldului prosumator (facturasold-prosum)."""
+
+    def __init__(self, coordinator, config_entry):
+        super().__init__(coordinator)
+        self.config_entry = config_entry
+        self._attr_unique_id = f"{DOMAIN}_sold_prosum_{config_entry.entry_id}"
+        self._attr_name = "Sold Prosumator"
+        self._attr_entity_id = f"sensor.{DOMAIN}_sold_prosum_{config_entry.data['cod_incasare']}"
+        self._icon = "mdi:solar-power"
+
+    @property
+    def state(self):
+        """Returnează starea principală (Da/Nu)."""
+        data = self.coordinator.data.get("facturasold_prosum")
+        if not data or not isinstance(data, list):
+            return "Nu"
+        # Verificăm dacă există cel puțin o factură prosumator neachitată (>0)
+        return "Da" if any(item.get("issuedValue", 0) > 0 for item in data) else "Nu"
+
+    @property
+    def extra_state_attributes(self):
+        """Atribute adiționale."""
+        data = self.coordinator.data.get("facturasold_prosum")
+        if not data or not isinstance(data, list):
+            return {
+                "Total sold": "0.00 lei",
+                "Detalii": "Nu există date prosumator",
+                "attribution": ATTRIBUTION
+            }
+
+        attributes = {}
+        total_sold = 0.0
+
+        for idx, item in enumerate(data, start=1):
+            issued_value = float(item.get("issuedValue", 0))
+            balance_value = float(item.get("balanceValue", 0))
+
+            display_value = issued_value if issued_value == balance_value else balance_value
+            if display_value > 0:
+                total_sold += display_value
+                
+                raw_date = item.get("maturityDate", "Necunoscut")
+                attributes[f"Factură {idx}"] = f"{display_value:.2f} lei (Scadentă: {raw_date})"
+
+        attributes["---------------"] = ""
+        attributes["Total sold"] = f"{total_sold:,.2f} lei" if total_sold > 0 else "0.00 lei"
+        attributes["attribution"] = ATTRIBUTION
+
+        return attributes
+
+    @property
+    def device_info(self):
+        return self._get_device_info()
+
+    def _get_device_info(self):
+        # Reutilizăm logica de device_info
+        data = self.coordinator.data.get("dateuser", {})
+        address_obj = data.get("consumptionPointAddress", {})
+        street_obj = address_obj.get("street", {})
+        street_type = street_obj.get("streetType", {}).get("label", "Strada")
+        street_name = street_obj.get("streetName", "Necunoscută")
+        street_no = address_obj.get("streetNumber", "N/A")
+        apartment = address_obj.get("apartment", "N/A")
+        locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
+
+        full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
+
+        return {
+            "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
+            "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
+            "model": "E-ON România",
+            "entry_type": DeviceEntryType.SERVICE,
+        }
+
+
+# ------------------------------------------------------------------------
+# EonUserWalletSensor
+# ------------------------------------------------------------------------
+class EonUserWalletSensor(CoordinatorEntity, SensorEntity):
+    """Senzor pentru portofelul utilizatorului."""
+
+    def __init__(self, coordinator, config_entry):
+        super().__init__(coordinator)
+        self.config_entry = config_entry
+        self._attr_unique_id = f"{DOMAIN}_user_wallet_{config_entry.entry_id}"
+        self._attr_name = "Portofel Utilizator"
+        self._attr_entity_id = f"sensor.{DOMAIN}_user_wallet_{config_entry.data['cod_incasare']}"
+        self._icon = "mdi:wallet"
+
+    @property
+    def state(self):
+        data = self.coordinator.data.get("user_wallet", {})
+        if not data:
+            return None
+        return data.get("balance")
+
+    @property
+    def unit_of_measurement(self):
+        return "RON"
+
+    @property
+    def extra_state_attributes(self):
+        data = self.coordinator.data.get("user_wallet", {})
+        if not data:
+            return {}
+
+        attributes = {
+            "Dată actualizare": data.get("updatedAt"),
+            "Sumă nealocată": f"{data.get('unallocatedAmount', 0)} RON",
+            "attribution": ATTRIBUTION
+        }
+        return attributes
+
+    @property
+    def device_info(self):
+        # Similar logic
+        data = self.coordinator.data.get("dateuser", {})
+        address_obj = data.get("consumptionPointAddress", {})
+        street_obj = address_obj.get("street", {})
+        street_type = street_obj.get("streetType", {}).get("label", "Strada")
+        street_name = street_obj.get("streetName", "Necunoscută")
+        street_no = address_obj.get("streetNumber", "N/A")
+        apartment = address_obj.get("apartment", "N/A")
+        locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
+        full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
+        return {
+            "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
+            "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
+            "model": "E-ON România",
+            "entry_type": DeviceEntryType.SERVICE,
+        }
+
+
+# ------------------------------------------------------------------------
+# EonReschedulingPlanSensor
+# ------------------------------------------------------------------------
+class EonReschedulingPlanSensor(CoordinatorEntity, SensorEntity):
+    """Senzor pentru planuri de eșalonare."""
+
+    def __init__(self, coordinator, config_entry):
+        super().__init__(coordinator)
+        self.config_entry = config_entry
+        self._attr_unique_id = f"{DOMAIN}_rescheduling_{config_entry.entry_id}"
+        self._attr_name = "Planuri eșalonare"
+        self._attr_entity_id = f"sensor.{DOMAIN}_rescheduling_{config_entry.data['cod_incasare']}"
+        self._icon = "mdi:calendar-clock"
+
+    @property
+    def state(self):
+        """Returnează numărul de planuri de eșalonare active."""
+        plans = self.coordinator.data.get("rescheduling_plans", [])
+        if not plans:
+            return 0
+        return len(plans)
+
+    @property
+    def extra_state_attributes(self):
+        plans = self.coordinator.data.get("rescheduling_plans", [])
+        if not plans:
+            return {"Info": "Nu există planuri de eșalonare."}
+
+        attributes = {}
+        for idx, plan in enumerate(plans, start=1):
+            attributes[f"Plan {idx}"] = f"Status: {plan.get('status')}, Total: {plan.get('totalAmount')} RON"
+            attributes[f"Plan {idx} Nr. Rate"] = plan.get("installmentsCount")
+        
+        attributes["attribution"] = ATTRIBUTION
+        return attributes
+
+    @property
+    def device_info(self):
+        # Similar logic
+        data = self.coordinator.data.get("dateuser", {})
+        address_obj = data.get("consumptionPointAddress", {})
+        street_obj = address_obj.get("street", {})
+        street_type = street_obj.get("streetType", {}).get("label", "Strada")
+        street_name = street_obj.get("streetName", "Necunoscută")
+        street_no = address_obj.get("streetNumber", "N/A")
+        apartment = address_obj.get("apartment", "N/A")
+        locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
+        full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
+        return {
+            "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
+            "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",
+            "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
+            "model": "E-ON România",
+            "entry_type": DeviceEntryType.SERVICE,
+        }
+
+
+# ------------------------------------------------------------------------
+# EonPaymentNoticeSensor
+# ------------------------------------------------------------------------
+class EonPaymentNoticeSensor(CoordinatorEntity, SensorEntity):
+    """Senzor pentru notificări de plată."""
+
+    def __init__(self, coordinator, config_entry):
+        super().__init__(coordinator)
+        self.config_entry = config_entry
+        self._attr_unique_id = f"{DOMAIN}_payment_notices_{config_entry.entry_id}"
+        self._attr_name = "Notificări plată"
+        self._attr_entity_id = f"sensor.{DOMAIN}_payment_notices_{config_entry.data['cod_incasare']}"
+        self._icon = "mdi:bell-alert"
+
+    @property
+    def state(self):
+        """Returnează numărul de notificări."""
+        notices = self.coordinator.data.get("payment_notices", [])
+        if not notices:
+            return 0
+        return len(notices)
+
+    @property
+    def extra_state_attributes(self):
+        notices = self.coordinator.data.get("payment_notices", [])
+        if not notices:
+            return {"Info": "Nu există notificări de plată."}
+
+        attributes = {}
+        for idx, notice in enumerate(notices, start=1):
+            attributes[f"Notificare {idx}"] = f"Suma: {notice.get('amount')} RON, Scadență: {notice.get('dueDate')}"
+        
+        attributes["attribution"] = ATTRIBUTION
+        return attributes
+
+    @property
+    def device_info(self):
+        # Similar logic
+        data = self.coordinator.data.get("dateuser", {})
+        address_obj = data.get("consumptionPointAddress", {})
+        street_obj = address_obj.get("street", {})
+        street_type = street_obj.get("streetType", {}).get("label", "Strada")
+        street_name = street_obj.get("streetName", "Necunoscută")
+        street_no = address_obj.get("streetNumber", "N/A")
+        apartment = address_obj.get("apartment", "N/A")
+        locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
+        full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
         return {
             "identifiers": {(DOMAIN, self.config_entry.data['cod_incasare'])},
             "name": f"E-ON România - {full_address} ({self.config_entry.data['cod_incasare']})",

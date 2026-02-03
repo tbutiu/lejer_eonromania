@@ -1,0 +1,14 @@
+{
+  "domain": "lejer_eonromania",
+  "name": "E-ON România (Lejer)",
+  "codeowners": [
+    "@tbutiu"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/tbutiu/lejer_eonromania",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/tbutiu/lejer_eonromania/issues",
+  "requirements": [],
+  "version": "1.5.3"
+}
