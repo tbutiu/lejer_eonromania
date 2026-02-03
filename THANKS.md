@@ -35,6 +35,6 @@ Le sunt recunoscător următorilor susținători pentru generozitatea lor:
 ---
 
 ## Cum poți contribui?
-Dacă vrei să mă susții și să te alături acestei liste, poți să faci o donație prin [BuyMeACoffee](https://www.buymeacoffee.com/tbutiu). Fiecare contribuție mă ajută să continui să dezvolt acest proiect și este apreciată din toată inima! 🙏
+Dacă vrei să mă susții și să te alături acestei liste, poți să faci o donație prin [BuyMeACoffee](https://www.buymeacoffee.com/lejer). Fiecare contribuție mă ajută să continui să dezvolt acest proiect și este apreciată din toată inima! 🙏
 
 Mulțumesc din suflet tuturor celor care au fost alături de mine! 💛
