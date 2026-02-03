@@ -230,5 +230,11 @@ Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau 
 
 ---
 
+## 👏 Credite
+
+Acest proiect a fost inițiat de [@cnecrea](https://github.com/cnecrea), căruia îi mulțumim pentru munca depusă la versiunea originală! 🚀
+
+---
+
 ## 🌟 Suport
 Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/tbutiu/lejer_eonromania/)! 😊
