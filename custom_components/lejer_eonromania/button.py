@@ -1,9 +1,3 @@
-"""Button platform for E-ON Romania."""
-
-import logging
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 #  Copyright (c) 2026 tbutiu
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,6 +17,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
+
+"""Button platform for E-ON Romania."""
+
+import logging
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from homeassistant.components.button import ButtonEntity
 
