@@ -1,8 +1,6 @@
 {
   "name": "E-ON România (Lejer)",
   "render_readme": true,
-  "url": "https://github.com/tbutiu/lejer_eonromania",
-  "iot_class": "cloud_polling",
   "country": [
     "RO"
   ]

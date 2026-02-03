@@ -1,0 +1,3 @@
+download_last_invoice:
+  name: Descarcă ultima factură
+  description: Descarcă ultima factură plătită în format PDF și o salvează local în /config/www/eon_invoices.
