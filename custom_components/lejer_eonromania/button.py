@@ -27,7 +27,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, KEY_CITIREINDEX
+from .const import DOMAIN, KEY_CITIREINDEX, KEY_CONTRACTS
 from .entity import EonEntity
 
 _LOGGER = logging.getLogger(__name__)

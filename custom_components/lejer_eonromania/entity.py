@@ -47,19 +47,34 @@ class EonEntity(CoordinatorEntity):
         address_obj = data.get("consumptionPointAddress", {})
         street_obj = address_obj.get("street", {})
         
-        street_type = street_obj.get("streetType", {}).get("label", "Strada")
-        street_name = street_obj.get("streetName", "Necunoscută")
-        street_no = address_obj.get("streetNumber", "N/A")
-        apartment = address_obj.get("apartment", "N/A")
-        locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
+        if street_obj:
+            street_type = street_obj.get("streetType", {}).get("label", "Strada")
+            street_name = street_obj.get("streetName", "Necunoscută")
+        else:
+            street_type = "Strada"
+            street_name = "Necunoscută"
+
+        street_no = address_obj.get("streetNumber", "N/A") if address_obj else "N/A"
+        apartment = address_obj.get("apartment", "N/A") if address_obj else "N/A"
+        
+        locality_name = "Necunoscut"
+        if address_obj:
+             locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
 
         full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
 
+        product_type = data.get("productType", "")
+        type_suffix = ""
+        if "ELECTRIC" in product_type or "F_EE" in product_type or "E.ON ENERGY" in product_type:
+             type_suffix = " (Electricitate)"
+        elif "GAZ" in product_type or "F_GN" in product_type or "E.ON GAS" in product_type:
+             type_suffix = " (Gaz)"
+        
         return {
             "identifiers": {(DOMAIN, self._cod_incasare)},
-            "name": f"E-ON România - {full_address} ({self._cod_incasare})",
+            "name": f"E-ON România - {full_address} ({self._cod_incasare}){type_suffix}",
             "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
-            "model": "E-ON România",
+            "model": f"E-ON România {type_suffix.strip(' ()')}",
             "via_device": (DOMAIN, self.config_entry.unique_id), # Link to main account device if we created one, or just grouping by config entry is enough. 
                                                                  # Actually unique_id is username/email.
         }

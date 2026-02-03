@@ -40,3 +40,8 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 test_output.txt
+
+# Logs
+*.log
+tests/logs/
+**/*.log

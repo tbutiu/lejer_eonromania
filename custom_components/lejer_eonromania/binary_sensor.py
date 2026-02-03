@@ -26,7 +26,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorDeviceClass
 
-from .const import DOMAIN, KEY_CITIREINDEX, KEY_FACTURASOLD
+from .const import DOMAIN, KEY_CITIREINDEX, KEY_FACTURASOLD, KEY_CONTRACTS
 from .entity import EonEntity
 
 _LOGGER = logging.getLogger(__name__)

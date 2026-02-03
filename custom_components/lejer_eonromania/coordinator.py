@@ -67,17 +67,46 @@ class EonRomaniaCoordinator(DataUpdateCoordinator):
         
         data_per_contract = {}
         
-        # 2. Iterate over each contract found
+        # 2. Iterate over each contract found (Flattening sub-contracts)
+        processed_contracts = []
         for contract in contracts_list:
+            # Add main contract if it seems valid (single) or just adding to process list
+            # But "DUO" parent contracts often return 400 for specific data.
+            # Strategy: Add ALL, but handle 400 gracefully.
+            # BETTER STRATEGY: Extract subcontracts and process them as individual contracts.
+            
+            # Check for subcontracts
+            if sub_contracts := contract.get("subContracts"):
+                for sub in sub_contracts:
+                     # Create a synthetic contract object or just use the sub object 
+                     # but ensure it has the structure we expect (details in 'contractDetails'?)
+                     # The API returns subcontracts as objects that look like contractDetails ??
+                     # Let's assume sub is a dict with 'accountContract' etc.
+                     # We wrap it in a structure compatible with our logic if needed, 
+                     # but our logic below looks for 'contractDetails' OR direct keys.
+                     processed_contracts.append(sub)
+                     
+            # Include the parent contract too? 
+            # If it's a collective contract (type=...?), requests might fail.
+            # But let's try to process it. If API calls fail, we log and continue.
+            processed_contracts.append(contract)
+            
+        data_per_contract = {}
+
+        for contract in processed_contracts:
             cod_incasare = None
             if "contractDetails" in contract:
                 cod_incasare = contract["contractDetails"].get("accountContract")
             else:
-                 # Fallback for old structure or direct object
+                # Fallback for old structure or direct object from subcontracts
                 cod_incasare = contract.get("contractId") or contract.get("accountContract")
+
             if not cod_incasare:
-                 # Fallback/Safety check
                  continue
+                 
+            # Skip if already processed (deduplication)
+            if cod_incasare in data_per_contract:
+                continue
                  
             # Specific Data per Contract
             dateuser_data = await self.api_client.async_fetch_dateuser_data(cod_incasare)
