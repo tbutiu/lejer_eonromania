@@ -1,3 +1,8 @@
+> [!NOTE]
+> **🚧 Proiect Personal & Work in Progress**  
+> Această integrare este un proiect personal, dezvoltat din pasiune. Este într-o continuă evoluție, iar noi optimizări și funcționalități vor fi adăugate pe măsură ce îmi vin idei noi. 
+> Folosiți-l cu încredere și nu ezitați să propuneți îmbunătățiri! ✨
+
 ![logo-main](https://github.com/user-attachments/assets/5841ec01-81c9-4c25-8373-b09d9ba11fe6)
 
 # E-ON România - Integrare pentru Home Assistant 🏠🇷🇴
@@ -55,9 +60,13 @@ Fiecare contract este reprezentat ca un **Device** separat în Home Assistant, g
 ## 🚀 Instalare
 
 ### 💡 Prin HACS (Recomandat):
-1. Adaugă [depozitul personalizat](https://github.com/tbutiu/lejer_eonromania) în HACS > Integrations > Custom repositories.
-2. Caută **E-ON România** și instalează.
-3. Restart Home Assistant.
+
+[![Deschide instanța ta Home Assistant și depozitul în Magazinul Comunității Home Assistant.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=https%3A%2F%2Fgithub.com%2Ftbutiu&repository=lejer_eonromania&category=Bills)
+
+1. Apasă pe butonul de mai sus pentru a deschide depozitul direct în HACS.
+2. Sau adaugă manual [depozitul](https://github.com/tbutiu/lejer_eonromania) în HACS > Integrations > Custom repositories.
+3. Caută **E-ON România** și instalează.
+4. Restart Home Assistant.
 
 ### ✋ Manual:
 1. Descarcă [ultima versiune](https://github.com/tbutiu/lejer_eonromania/releases).
