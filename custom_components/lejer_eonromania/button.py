@@ -36,37 +36,53 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     """Set up the E-ON Romania buttons."""
     data = hass.data[DOMAIN][config_entry.entry_id]
     coordinator = data["coordinator"]
+    
+    contracts_list = coordinator.data.get(KEY_CONTRACTS, [])
+    buttons = []
+    
+    for contract in contracts_list:
+        cod_incasare = None
+        if "contractDetails" in contract:
+            cod_incasare = contract["contractDetails"].get("accountContract")
+        else:
+            cod_incasare = contract.get("contractId") or contract.get("accountContract")
 
-    async_add_entities([TrimiteIndexButton(coordinator, config_entry)])
+        if not cod_incasare:
+            continue
+        buttons.append(TrimiteIndexButton(coordinator, config_entry, cod_incasare))
+
+    async_add_entities(buttons)
 
 class TrimiteIndexButton(EonEntity, ButtonEntity):
     """Button to send meter reading."""
 
-    def __init__(self, coordinator, config_entry):
-        super().__init__(coordinator, config_entry)
+    def __init__(self, coordinator, config_entry, cod_incasare):
+        super().__init__(coordinator, config_entry, cod_incasare)
         self._attr_name = "Trimite index"
-        self._attr_unique_id = f"{DOMAIN}_trimite_index_{config_entry.entry_id}"
-        self._attr_entity_id = f"button.{DOMAIN}_trimite_index_{self._cod_incasare}"
+        self._attr_unique_id = f"{DOMAIN}_trimite_index_{config_entry.entry_id}_{cod_incasare}"
+        self._attr_entity_id = f"button.{DOMAIN}_trimite_index_{cod_incasare}"
         self._attr_icon = "mdi:counter"
 
     async def async_press(self):
         """Send the index to E-ON."""
         try:
-            # Get index value from input_number
-            input_entity = "input_number.gas_meter_reading"
-            if not (state := self.hass.states.get(input_entity)):
-                _LOGGER.error("Entity %s not found.", input_entity)
+            # Get index value from our own number entity
+            # Entity ID format: number.{DOMAIN}_index_input_{cod_incasare}
+            input_entity_id = f"number.{DOMAIN}_index_input_{self._cod_incasare}"
+            
+            if not (state := self.hass.states.get(input_entity_id)):
+                _LOGGER.error("Entity %s not found. Please verify it exists.", input_entity_id)
                 return
 
             try:
                 index_value = int(float(state.state))
             except ValueError:
-                _LOGGER.error("Invalid value in %s: %s", input_entity, state.state)
+                _LOGGER.error("Invalid value in %s: %s", input_entity_id, state.state)
                 return
 
             # Get internal meter ID (ablbelnr)
             ablbelnr = None
-            if data := self.coordinator.data.get(KEY_CITIREINDEX):
+            if data := self.contract_data.get(KEY_CITIREINDEX):
                 if devices := data.get("indexDetails", {}).get("devices", []):
                     for device in devices:
                         if indexes := device.get("indexes", []):

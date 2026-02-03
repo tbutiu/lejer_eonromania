@@ -1,4 +1,3 @@
-"""Base entity class for E-ON Romania integration."""
 #  Copyright (c) 2026 tbutiu
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,6 +18,9 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+"""Base entity class for E-ON Romania integration."""
+
+
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.device_registry import DeviceEntryType
 
@@ -27,16 +29,21 @@ from .const import DOMAIN, ATTRIBUTION
 class EonEntity(CoordinatorEntity):
     """Base class for E-ON Romania entities."""
 
-    def __init__(self, coordinator, config_entry):
+    def __init__(self, coordinator, config_entry, cod_incasare):
         """Initialize the base entity."""
         super().__init__(coordinator)
         self.config_entry = config_entry
-        self._cod_incasare = config_entry.data.get("cod_incasare")
+        self._cod_incasare = cod_incasare
+
+    @property
+    def contract_data(self):
+        """Return data for this specific contract."""
+        return self.coordinator.data.get("data_per_contract", {}).get(self._cod_incasare, {})
 
     @property
     def device_info(self):
         """Return device information."""
-        data = self.coordinator.data.get("dateuser", {})
+        data = self.contract_data.get("dateuser", {})
         address_obj = data.get("consumptionPointAddress", {})
         street_obj = address_obj.get("street", {})
         
@@ -53,7 +60,8 @@ class EonEntity(CoordinatorEntity):
             "name": f"E-ON România - {full_address} ({self._cod_incasare})",
             "manufacturer": "E Victor Teodor Butiu ( tbutiu )",
             "model": "E-ON România",
-            "entry_type": DeviceEntryType.SERVICE,
+            "via_device": (DOMAIN, self.config_entry.unique_id), # Link to main account device if we created one, or just grouping by config entry is enough. 
+                                                                 # Actually unique_id is username/email.
         }
 
     @property

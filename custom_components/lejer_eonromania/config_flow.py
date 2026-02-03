@@ -1,5 +1,3 @@
-"""ConfigFlow for E-ON Romania integration."""
-
 #  Copyright (c) 2026 tbutiu
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,6 +17,8 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
+
+"""ConfigFlow for E-ON Romania integration."""
 
 import logging
 import voluptuous as vol
@@ -43,26 +43,19 @@ class EonRomaniaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             username = user_input["username"]
             password = user_input["password"]
-            cod_incasare = user_input["cod_incasare"]
-            update_interval = user_input["update_interval"]
-
-            # Validate cod_incasare length
-            if len(cod_incasare) < 12:
-                cod_incasare = cod_incasare.zfill(12)
-            elif len(cod_incasare) > 12:
-                errors["cod_incasare"] = "invalid_cod_incasare"
-
             if not errors:
                 session = async_get_clientsession(self.hass)
                 api_client = EonApiClient(session, username, password)
                 
                 if await api_client.async_login():
+                    await self.async_set_unique_id(username)
+                    self._abort_if_unique_id_configured()
+                    
                     return self.async_create_entry(
-                        title=f"E-ON România ({cod_incasare})",
+                        title=f"{username}",
                         data={
                             "username": username,
                             "password": password,
-                            "cod_incasare": cod_incasare,
                             "update_interval": update_interval,
                         },
                     )
@@ -73,7 +66,6 @@ class EonRomaniaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema({
             vol.Required("username"): str,
             vol.Required("password"): str,
-            vol.Required("cod_incasare"): str,
             vol.Optional("update_interval", default=DEFAULT_UPDATE_INTERVAL): int,
         })
 
@@ -99,7 +91,6 @@ class EonRomaniaOptionsFlow(config_entries.OptionsFlow):
             updated_data = {
                 "username": user_input["username"],
                 "password": user_input["password"],
-                "cod_incasare": user_input["cod_incasare"],
             }
             updated_options = {
                 "update_interval": user_input["update_interval"]
@@ -115,7 +106,6 @@ class EonRomaniaOptionsFlow(config_entries.OptionsFlow):
         data_schema = vol.Schema({
             vol.Optional("username", default=self.config_entry.data.get("username", "")): str,
             vol.Optional("password", default=self.config_entry.data.get("password", "")): str,
-            vol.Optional("cod_incasare", default=self.config_entry.data.get("cod_incasare", "")): str,
             vol.Optional("update_interval", default=self.config_entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL)): int,
         })
 

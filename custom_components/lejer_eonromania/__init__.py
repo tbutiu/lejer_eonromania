@@ -41,7 +41,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     _LOGGER.debug("Inițializarea globală a integrării %s", DOMAIN)
     return True
 
-PLATFORMS = ["sensor", "button", "binary_sensor"]
+PLATFORMS = ["sensor", "button", "binary_sensor", "number"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Configurează integrarea pentru o anumită intrare (config entry)."""

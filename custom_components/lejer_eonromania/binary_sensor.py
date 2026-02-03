@@ -1,5 +1,3 @@
-"""Binary Sensor platform for E-ON Romania."""
-
 #  Copyright (c) 2026 tbutiu
 #
 #  Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,6 +17,7 @@
 #  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
+"""Binary Sensor platform for E-ON Romania."""
 
 import logging
 from datetime import datetime
@@ -36,25 +35,40 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
     """Set up the E-ON Romania binary sensors."""
     data = hass.data[DOMAIN][config_entry.entry_id]
     coordinator = data["coordinator"]
+    
+    contracts_list = coordinator.data.get(KEY_CONTRACTS, [])
+    sensors = []
+    
+    for contract in contracts_list:
+        cod_incasare = None
+        if "contractDetails" in contract:
+            cod_incasare = contract["contractDetails"].get("accountContract")
+        else:
+            cod_incasare = contract.get("contractId") or contract.get("accountContract")
 
-    async_add_entities([
-        EonWindowOpenBinarySensor(coordinator, config_entry),
-        EonInvoiceDueBinarySensor(coordinator, config_entry),
-    ])
+        if not cod_incasare:
+            continue
+            
+        sensors.extend([
+            EonWindowOpenBinarySensor(coordinator, config_entry, cod_incasare),
+            EonInvoiceDueBinarySensor(coordinator, config_entry, cod_incasare),
+        ])
+
+    async_add_entities(sensors)
 
 class EonWindowOpenBinarySensor(EonEntity, BinarySensorEntity):
     """Binary sensor indicating if index submission is allowed."""
 
-    def __init__(self, coordinator, config_entry):
-        super().__init__(coordinator, config_entry)
+    def __init__(self, coordinator, config_entry, cod_incasare):
+        super().__init__(coordinator, config_entry, cod_incasare)
         self._attr_name = "Perioadă transmitere index"
-        self._attr_unique_id = f"{DOMAIN}_window_open_{config_entry.entry_id}"
-        self._attr_entity_id = f"binary_sensor.{DOMAIN}_window_open_{self._cod_incasare}"
+        self._attr_unique_id = f"{DOMAIN}_window_open_{config_entry.entry_id}_{cod_incasare}"
+        self._attr_entity_id = f"binary_sensor.{DOMAIN}_window_open_{cod_incasare}"
         self._attr_device_class = BinarySensorDeviceClass.WINDOW  # Metaphorical window
 
     @property
     def is_on(self):
-        data = self.coordinator.data.get(KEY_CITIREINDEX)
+        data = self.contract_data.get(KEY_CITIREINDEX)
         if not data: return False
         return data.get("readingPeriod", {}).get("allowedReading", False)
 
@@ -66,16 +80,16 @@ class EonWindowOpenBinarySensor(EonEntity, BinarySensorEntity):
 class EonInvoiceDueBinarySensor(EonEntity, BinarySensorEntity):
     """Binary sensor indicating if an invoice is due soon (within 3 days) or overdue."""
 
-    def __init__(self, coordinator, config_entry):
-        super().__init__(coordinator, config_entry)
+    def __init__(self, coordinator, config_entry, cod_incasare):
+        super().__init__(coordinator, config_entry, cod_incasare)
         self._attr_name = "Scadență factură"
-        self._attr_unique_id = f"{DOMAIN}_invoice_due_{config_entry.entry_id}"
-        self._attr_entity_id = f"binary_sensor.{DOMAIN}_invoice_due_{self._cod_incasare}"
+        self._attr_unique_id = f"{DOMAIN}_invoice_due_{config_entry.entry_id}_{cod_incasare}"
+        self._attr_entity_id = f"binary_sensor.{DOMAIN}_invoice_due_{cod_incasare}"
         self._attr_device_class = BinarySensorDeviceClass.PROBLEM
 
     @property
     def is_on(self):
-        data = self.coordinator.data.get(KEY_FACTURASOLD)
+        data = self.contract_data.get(KEY_FACTURASOLD)
         if not data or not isinstance(data, list):
             return False
             
