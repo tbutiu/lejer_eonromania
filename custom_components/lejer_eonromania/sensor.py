@@ -1,5 +1,25 @@
 """Sensor platform for E-ON Romania."""
 
+#  Copyright (c) 2026 tbutiu
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in all
+#  copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#  SOFTWARE.
+
 import logging
 from datetime import datetime
 from collections import defaultdict
@@ -57,7 +77,9 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
                 sensors.append(ArhivaSensor(coordinator, config_entry, year))
 
     # Payments History
-    payments_list = coordinator.data.get(KEY_PAYMENTS, [])
+    payments_data = coordinator.data.get(KEY_PAYMENTS, {})
+    payments_list = payments_data.get("list", []) if payments_data else []
+    
     if payments_list:
         payments_by_year = defaultdict(list)
         for payment in payments_list:
@@ -311,19 +333,37 @@ class ConventieConsumSensor(EonEntity, SensorEntity):
     @property
     def state(self):
         data = self.coordinator.data.get(KEY_CONVENTIECONSUM)
-        if not data or "convention" not in data: return 0
-        return sum(1 for m in data["convention"] if m.get("value", 0) > 0)
+        if not data or not isinstance(data, list) or not data:
+            return 0
+        
+        convention = data[0].get("conventionLine", {})
+        if not convention:
+            return 0
+            
+        # Count months with non-zero value
+        count = 0
+        for i in range(1, 13):
+            if convention.get(f"valueMonth{i}", 0) > 0:
+                count += 1
+        return count
 
     @property
     def extra_state_attributes(self):
         attrs = super().extra_state_attributes
         data = self.coordinator.data.get(KEY_CONVENTIECONSUM)
-        if data and "convention" in data:
-            for item in data["convention"]:
-                val = item.get("value", 0)
-                if val > 0:
-                    month = MONTHS_RO.get(datetime(2000, item.get("month"), 1).strftime("%B"), "luna")
-                    attrs[f"Convenție {month}"] = f"{val} mc"
+        
+        if data and isinstance(data, list) and data:
+            convention = data[0].get("conventionLine", {})
+            if convention:
+                for i in range(1, 13):
+                    val = convention.get(f"valueMonth{i}", 0)
+                    if val > 0:
+                        # Use a fixed month name mapping or simpler approach
+                        month_key = f"valueMonth{i}"
+                        month_name = datetime(2000, i, 1).strftime("%B")
+                        # Try to use RO names if imported, else fallback
+                        month_ro = MONTHS_RO.get(month_name, month_name)
+                        attrs[f"Convenție {month_ro}"] = f"{val} mc"
         return attrs
 
 
@@ -365,7 +405,10 @@ class ArhivaPlatiSensor(EonEntity, SensorEntity):
         return len(self._get_payments())
 
     def _get_payments(self):
-        return [p for p in self.coordinator.data.get(KEY_PAYMENTS, []) 
+        data = self.coordinator.data.get(KEY_PAYMENTS, {})
+        if not data: return []
+        payments = data.get("list", [])
+        return [p for p in payments
                 if p.get("paymentDate", "").startswith(str(self._year))]
 
 

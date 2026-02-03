@@ -1,3 +1,43 @@
+#  Copyright (c) 2024 tbutiu
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in all
+#  copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#  SOFTWARE.
+
+#  Copyright (c) 2026 tbutiu
+#
+#  Permission is hereby granted, free of charge, to any person obtaining a copy
+#  of this software and associated documentation files (the "Software"), to deal
+#  in the Software without restriction, including without limitation the rights
+#  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+#  copies of the Software, and to permit persons to whom the Software is
+#  furnished to do so, subject to the following conditions:
+#
+#  The above copyright notice and this permission notice shall be included in all
+#  copies or substantial portions of the Software.
+#
+#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+#  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+#  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+#  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+#  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+#  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+#  SOFTWARE.
+
 import pytest
 import os
 import sys
@@ -73,7 +113,22 @@ load_dotenv()
 USERNAME = os.getenv("EON_USERNAME")
 PASSWORD = os.getenv("EON_PASSWORD")
 DELAY_SECONDS = int(os.getenv("EON_API_DELAY", 5))
+DELAY_SECONDS = int(os.getenv("EON_API_DELAY", 5))
 COD_INCASARE = os.getenv("EON_COD_INCASARE")
+
+# Ensure logs directory exists and is empty
+LOGS_DIR = os.path.join(os.path.dirname(__file__), 'logs')
+if os.path.exists(LOGS_DIR):
+    for f in os.listdir(LOGS_DIR):
+        file_path = os.path.join(LOGS_DIR, f)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print(f"Error deleting {file_path}: {e}")
+os.makedirs(LOGS_DIR, exist_ok=True)
+import time
+import datetime
 
 # Configure logging to see output
 logging.basicConfig(level=logging.DEBUG)
@@ -94,6 +149,35 @@ async def test_real_login_and_fetch():
             def __init__(self, session, username, password):
                 super().__init__(session, username, password)
                 self.login_data = None
+            
+            async def _do_request(self, method: str, url: str, json_data: dict = None):
+                """Override to capture and log request/response details."""
+                start_time = time.time()
+                resp_data, status = await super()._do_request(method, url, json_data)
+                duration = time.time() - start_time
+                
+                # Create a safe filename from URL
+                safe_url = url.replace("https://", "").replace("/", "_").replace("?", "_").replace("&", "_")
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"{timestamp}_{method}_{safe_url[:50]}.log"
+                filepath = os.path.join(LOGS_DIR, filename)
+                
+                log_content = f"--- REQUEST ---\n"
+                log_content += f"Timestamp: {datetime.datetime.now().isoformat()}\n"
+                log_content += f"Method: {method}\n"
+                log_content += f"URL: {url}\n"
+                log_content += f"Payload: {json.dumps(json_data, indent=2) if json_data else 'None'}\n\n"
+                
+                log_content += f"--- RESPONSE ---\n"
+                log_content += f"Status: {status}\n"
+                log_content += f"Duration: {duration:.4f}s\n"
+                log_content += f"Body: {json.dumps(resp_data, indent=2) if resp_data else 'None'}\n"
+                
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(log_content)
+                    
+                _LOGGER.info("Logged API interaction to %s", filepath)
+                return resp_data, status
 
             async def async_login(self) -> bool:
                 """Obtain a new authentication token and capture data."""
@@ -191,13 +275,44 @@ async def test_real_login_and_fetch():
             _LOGGER.info("--------------------------------------------------")
 
             # A. Contracts List using this code (Discovery of sub-contracts)
-            await asyncio.sleep(DELAY_SECONDS)
-            contracts = await api.async_fetch_account_contracts_list()
-            if contracts:
-                _LOGGER.info("[OK] Contracts List (Sub-contracts found): %s", json.dumps(contracts, indent=2))
-            else:
-                _LOGGER.error("[FAIL] Contracts List")
+            # Actually, the first call should be the LIST itself to find the codes, 
+            # then we iterate the details.
+            pass
 
+        # REFACTORED DISCOVERY: Fetch the list FIRST, then loop through real objects
+        _LOGGER.info("Fetching Global Contract List for correct IDs...")
+        global_contracts = await api.async_fetch_account_contracts_list()
+        
+        valid_contract_ids = []
+        if global_contracts:
+            _LOGGER.info("[OK] Global Contracts List: %d items", len(global_contracts))
+            # Extract valid IDs
+            for item in global_contracts:
+                details = item.get("contractDetails", {})
+                if c_id := details.get("accountContract"):
+                    valid_contract_ids.append(c_id)
+                    _LOGGER.info("  - Found Contract ID: %s (Type: %s)", c_id, details.get("type"))
+                
+                # Check subcontracts
+                for sub in item.get("subContracts", []):
+                    if c_id_sub := sub.get("accountContract"):
+                        valid_contract_ids.append(c_id_sub)
+                        _LOGGER.info("  - Found Sub-Contract ID: %s", c_id_sub)
+
+        else:
+            _LOGGER.error("[FAIL] Global Contracts List is empty or failed.")
+            
+        if not valid_contract_ids:
+            _LOGGER.warning("No valid IDs found from API. Falling back to simple generic discovery if any.")
+            valid_contract_ids = list(discovered_codes)
+
+        _LOGGER.info("Starting validation for %d Validated IDs: %s", len(valid_contract_ids), valid_contract_ids)
+
+        for code in valid_contract_ids:
+            _LOGGER.info("--------------------------------------------------")
+            _LOGGER.info("VALIDATING ENDPOINTS FOR CODE: %s", code)
+            _LOGGER.info("--------------------------------------------------")
+            
             # B. Date User
             await asyncio.sleep(DELAY_SECONDS)
             date_user = await api.async_fetch_dateuser_data(code)
@@ -245,6 +360,46 @@ async def test_real_login_and_fetch():
                  _LOGGER.info("[OK] Consumption Graphic: %s", json.dumps(graph, indent=2))
             else:
                  _LOGGER.error("[FAIL] Consumption Graphic")
+
+            # H. Archive Data
+            await asyncio.sleep(DELAY_SECONDS)
+            archive = await api.async_fetch_arhiva_data(code)
+            if archive:
+                 _LOGGER.info("[OK] Archive Data: %s", json.dumps(archive, indent=2))
+            else:
+                 _LOGGER.info("[INFO] Archive Data is empty (this might be normal)")
+
+            # I. Payments History
+            await asyncio.sleep(DELAY_SECONDS)
+            payments = await api.async_fetch_payments_data(code)
+            if payments:
+                 _LOGGER.info("[OK] Payments History: %s", json.dumps(payments, indent=2))
+            else:
+                 _LOGGER.info("[INFO] Payments History is empty")
+
+            # J. Rescheduling Plans
+            await asyncio.sleep(DELAY_SECONDS)
+            plans = await api.async_fetch_rescheduling_plans(code)
+            if plans:
+                 _LOGGER.info("[OK] Rescheduling Plans: %s", json.dumps(plans, indent=2))
+            else:
+                 _LOGGER.info("[INFO] Rescheduling Plans is empty")
+
+            # K. Payment Notices
+            await asyncio.sleep(DELAY_SECONDS)
+            notices = await api.async_fetch_payment_notices(code)
+            if notices:
+                 _LOGGER.info("[OK] Payment Notices: %s", json.dumps(notices, indent=2))
+            else:
+                 _LOGGER.info("[INFO] Payment Notices is empty")
+        
+        # L. Wallet (User Level)
+        await asyncio.sleep(DELAY_SECONDS)
+        wallet = await api.async_fetch_user_wallet()
+        if wallet:
+            _LOGGER.info("[OK] User Wallet: %s", json.dumps(wallet, indent=2))
+        else:
+            _LOGGER.error("[FAIL] User Wallet")
 
 if __name__ == "__main__":
     # Allow running this file directly if pytest is installed
