@@ -1,5 +1,7 @@
 {
-  "name": "E-ON România",
+  "name": "E-ON România (Lejer)",
   "render_readme": true,
-  "country": ["RO"]
+  "country": [
+    "RO"
+  ]
 }
