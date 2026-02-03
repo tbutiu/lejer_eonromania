@@ -40,9 +40,10 @@ class EonRomaniaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors = {}
 
-        if user_input is not None:
+            if user_input is not None:
             username = user_input["username"]
             password = user_input["password"]
+            update_interval = user_input.get("update_interval", DEFAULT_UPDATE_INTERVAL)
             if not errors:
                 session = async_get_clientsession(self.hass)
                 api_client = EonApiClient(session, username, password)
