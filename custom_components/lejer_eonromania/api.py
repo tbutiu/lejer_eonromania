@@ -1,21 +1,29 @@
 import logging
+from typing import Optional, Dict, List, Any
 from aiohttp import ClientSession, ClientTimeout
-from .const import HEADERS_POST, URLS
+
+from .const import (
+    URLS, HEADERS_POST, 
+    KEY_CITIREINDEX, KEY_CONVENTIECONSUM, KEY_COMPARAREANUALAGRAFIC, 
+    KEY_ARHIVA, KEY_FACTURASOLD, KEY_FACTURASOLD_PROSUM, 
+    KEY_PROSUMER_INVOICES, KEY_PAID_INVOICES, KEY_RESCHEDULING_PLANS,
+    KEY_PAYMENT_NOTICES, KEY_PAYMENTS, KEY_DATEUSER
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 class EonApiClient:
-    """Clasă pentru comunicarea cu API-ul EON România."""
+    """Class for communicating with the E-ON Romania API."""
 
     def __init__(self, session: ClientSession, username: str, password: str):
-        """Inițializează clientul API cu o sesiune de tip ClientSession."""
+        """Initialize the API client."""
         self._session = session
         self._username = username
         self._password = password
-        self._token = None
+        self._token: Optional[str] = None
 
     async def async_login(self) -> bool:
-        """Obține un token nou de autentificare."""
+        """Obtain a new authentication token."""
         payload = {
             "username": self._username,
             "password": self._password,
@@ -23,185 +31,161 @@ class EonApiClient:
         }
 
         try:
-            # Folosim un timeout scurt pentru login
             timeout = ClientTimeout(total=20)
-            async with self._session.post(URLS["login"], json=payload, headers=HEADERS_POST, timeout=timeout) as resp:
+            async with self._session.post(
+                URLS["login"], json=payload, headers=HEADERS_POST, timeout=timeout
+            ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
                     self._token = data.get("accessToken")
-                    _LOGGER.debug("Token obținut cu succes.")
+                    _LOGGER.debug("Token obtained successfully.")
                     return True
                 else:
                     text = await resp.text()
-                    _LOGGER.error(
-                        "Eroare la login. Status=%s, Răspuns=%s",
-                        resp.status,
-                        text
-                    )
+                    _LOGGER.error("Login error. Status=%s, Response=%s", resp.status, text)
                     self._token = None
                     return False
         except Exception as e:
-            _LOGGER.error("Eroare la conectarea cu API-ul pentru autentificare: %s", e)
+            _LOGGER.error("Error connecting to auth API: %s", e)
             self._token = None
             return False
 
-    async def async_fetch_dateuser_data(self, cod_incasare: str):
-        """Obține datele utilizatorului (contract)."""
+    async def async_fetch_dateuser_data(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch user contract data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["dateuser"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea datelor utilizator."
+            "GET",
+            URLS["dateuser"].format(cod_incasare=cod_incasare),
+            "Error fetching user data."
         )
 
-    async def async_fetch_citireindex_data(self, cod_incasare: str):
-        """Obține datele despre indexul curent."""
+    async def async_fetch_citireindex_data(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch current index data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["citireindex"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea indexului curent."
+            "GET",
+            URLS["citireindex"].format(cod_incasare=cod_incasare),
+            "Error fetching current index."
         )
 
-    async def async_fetch_conventieconsum_data(self, cod_incasare: str):
-        """Obține datele despre convenție consum."""
+    async def async_fetch_conventieconsum_data(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch consumption convention data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["conventieconsum"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea convenție consum."
+            "GET",
+            URLS["conventieconsum"].format(cod_incasare=cod_incasare),
+            "Error fetching consumption convention."
         )
 
-    async def async_fetch_comparareanualagrafic_data(self, cod_incasare: str):
-        """Obține datele despre comparare anuala grafic."""
+    async def async_fetch_comparareanualagrafic_data(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch annual graphic comparison data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["comparareanualagrafic"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea comparare anuala grafic."
+            "GET",
+            URLS["comparareanualagrafic"].format(cod_incasare=cod_incasare),
+            "Error fetching annual graphic comparison."
         )
 
-    async def async_fetch_arhiva_data(self, cod_incasare: str):
-        """Obține date istorice (arhiva)."""
+    async def async_fetch_arhiva_data(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch archive data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["arhiva"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea datelor din arhivă."
+            "GET",
+            URLS["arhiva"].format(cod_incasare=cod_incasare),
+            "Error fetching archive data."
         )
 
-    async def async_fetch_facturasold_data(self, cod_incasare: str):
-        """Obține datele despre soldul facturilor."""
-        # Se folosește URL-ul invoices_list_unpaid (echivalent cu facturasold dar cu subcontracts=true)
-        # sau URLS["facturasold"] care a fost updatat.
+    async def async_fetch_facturasold_data(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch invoice balance data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["facturasold"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea soldului facturilor."
+            "GET",
+            URLS["facturasold"].format(cod_incasare=cod_incasare),
+            "Error fetching invoice balance."
         )
 
-    # --- Endpoints Noi ---
-
-    async def async_fetch_account_contracts_list(self, cod_incasare: str):
-        """
-        Obține lista contractelor asociate contului (POST). 
-        Folosind 'collectiveContract' ca parametrul cod_incasare.
-        """
+    async def async_fetch_account_contracts_list(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch account contracts list using collectiveContract parameter."""
         payload = {"collectiveContract": cod_incasare, "limit": -1}
         return await self._request_with_token(
-            method="POST",
-            url=URLS["account_contracts_list"],
-            json_data=payload,
-            on_error="Eroare la obținerea listei de contracte."
+            "POST",
+            URLS["account_contracts_list"],
+            "Error fetching account contracts list.",
+            json_data=payload
         )
 
-    async def async_fetch_current_date(self):
-        """Obține data curentă de la API (check de sistem)."""
-        # Acest endpoint pare să nu necesite autentificare în curl, dar verificăm.
-        # Curl-ul are header Ocp-Apim dar nu are Authorization Bearer.
-        # Totuși, metoda generică _request_with_token adaugă Bearer. 
-        # API-ul probabil acceptă și cu Bearer.
+    async def async_fetch_current_date(self) -> Optional[dict]:
+        """Fetch current date from API."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["current_date"],
-            on_error="Eroare la obținerea datei curente."
+            "GET",
+            URLS["current_date"],
+            "Error fetching current date."
         )
 
-    async def async_fetch_invoice_balance(self, cod_incasare: str):
-        """Obține balanța totală facturi (cu subcontracts)."""
+    async def async_fetch_invoice_balance(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch invoice balance with subcontracts."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["invoice_balance"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea balanței facturilor."
+            "GET",
+            URLS["invoice_balance"].format(cod_incasare=cod_incasare),
+            "Error fetching invoice balance (with subcontracts)."
         )
 
-    async def async_fetch_invoice_balance_prosum(self, cod_incasare: str):
-        """Obține balanța prosumator."""
+    async def async_fetch_invoice_balance_prosum(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch prosumer invoice balance."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["invoice_balance_prosum"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea balanței prosumator."
+            "GET",
+            URLS["invoice_balance_prosum"].format(cod_incasare=cod_incasare),
+            "Error fetching prosumer balance."
         )
 
-    async def async_fetch_invoices_list_paid(self, cod_incasare: str):
-        """Obține lista facturilor plătite (prima pagină)."""
+    async def async_fetch_invoices_list_paid(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch paid invoices list (page 1)."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["invoices_list_paid"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea listei de facturi plătite."
+            "GET",
+            URLS["invoices_list_paid"].format(cod_incasare=cod_incasare),
+            "Error fetching paid invoices."
         )
 
-    async def async_fetch_rescheduling_plans(self, cod_incasare: str):
-        """Obține planurile de reeșalonare."""
+    async def async_fetch_rescheduling_plans(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch rescheduling plans."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["rescheduling_plans"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea planurilor de reeșalonare."
+            "GET",
+            URLS["rescheduling_plans"].format(cod_incasare=cod_incasare),
+            "Error fetching rescheduling plans."
         )
 
-    async def async_fetch_invoices_list_prosum(self, cod_incasare: str):
-        """Obține lista facturilor prosumator (prima pagină)."""
+    async def async_fetch_invoices_list_prosum(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch prosumer invoices list."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["invoices_list_prosum"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea listei de facturi prosumator."
+            "GET",
+            URLS["invoices_list_prosum"].format(cod_incasare=cod_incasare),
+            "Error fetching prosumer invoices."
         )
     
-    async def async_fetch_payment_notices(self, cod_incasare: str):
-        """Obține notificările de plată (unpaid)."""
+    async def async_fetch_payment_notices(self, cod_incasare: str) -> Optional[dict]:
+        """Fetch payment notices."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["payment_notices"].format(cod_incasare=cod_incasare),
-            on_error="Eroare la obținerea notificărilor de plată."
+            "GET",
+            URLS["payment_notices"].format(cod_incasare=cod_incasare),
+            "Error fetching payment notices."
         )
 
-    async def async_fetch_user_wallet(self):
-        """Obține portofelul utilizatorului."""
+    async def async_fetch_user_wallet(self) -> Optional[dict]:
+        """Fetch user wallet data."""
         return await self._request_with_token(
-            method="GET",
-            url=URLS["user_wallet"],
-            on_error="Eroare la obținerea portofelului utilizator."
+            "GET",
+            URLS["user_wallet"],
+            "Error fetching user wallet."
         )
 
-    # --- Gestionare Plăți (paginare manuală păstrată) ---
-
-    async def async_fetch_payments_data(self, cod_incasare: str):
-        """
-        Obține toate înregistrările de plăți (paginate) pentru un cont dat.
-        Returnează o listă unică, cumulând datele de pe toate paginile.
-        """
+    async def async_fetch_payments_data(self, cod_incasare: str) -> List[dict]:
+        """Fetch all payment records with manual pagination."""
         if not await self._ensure_token():
-            return None
+            return []
 
         results = []
         page = 1
         while True:
-            url = (
-                f"https://api2.eon.ro/invoices/v1/payments/payment-list"
-                f"?accountContract={cod_incasare}&page={page}"
-            )
+            url = URLS["payments_list"].format(cod_incasare=cod_incasare, page=page)
             
-            # Request manual pentru a gestiona paginarea specifică
             data, status = await self._do_request("GET", url)
             
             if status == 401:
-                 # Re-try logic simplificat (deja handled in _request_with_token dar aici e bucla manuala)
-                 # Pentru consistență, folosim logica de token refresh
+                 # Retry logic
                  if await self.async_login():
                      data, status = await self._do_request("GET", url)
                  else:
@@ -213,67 +197,79 @@ class EonApiClient:
             chunk = data.get("list", [])
             results.extend(chunk)
 
-            has_next = data.get("hasNext", False)
-            if not has_next:
+            if not data.get("hasNext", False):
                 break
             page += 1
 
         return results
 
-    async def async_trimite_index(self, account_contract: str, ablbelnr: str, index_value: int):
-        """Trimite indexul către API-ul E-ON."""
+    async def async_trimite_index(self, account_contract: str, ablbelnr: str, index_value: int) -> Optional[dict]:
+        """Send meter reading to API."""
         payload = {
             "accountContract": account_contract,
             "channel": "WEBSITE",
             "indexes": [{"ablbelnr": ablbelnr, "indexValue": index_value}],
         }
         return await self._request_with_token(
-            method="POST",
-            url=URLS["trimite_index"],
-            json_data=payload,
-            on_error="Eroare la trimiterea indexului."
+            "POST",
+            URLS["trimite_index"],
+            "Error sending index.",
+            json_data=payload
         )
 
-    # --- Helpers ---
+    async def async_get_invoice_pdf(self, cod_incasare: str, invoice_number: str) -> Optional[bytes]:
+        """Download invoice PDF."""
+        url = URLS["download_invoice"].format(cod_incasare=cod_incasare, invoice_number=invoice_number)
+        
+        if not await self._ensure_token():
+            return None
+
+        headers = {**HEADERS_POST}
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}"
+
+        try:
+            async with self._session.get(url, headers=headers) as resp:
+                if resp.status == 200:
+                    return await resp.read()
+                else:
+                    _LOGGER.error("Error downloading PDF. Status=%s", resp.status)
+                    return None
+        except Exception as e:
+            _LOGGER.error("Error downloading PDF: %s", e)
+            return None
 
     async def _ensure_token(self) -> bool:
-        """Asigură că avem un token valid, inițiind login dacă e necesar."""
+        """Ensure a valid token exists."""
         if self._token is None:
             return await self.async_login()
         return True
 
-    async def _request_with_token(self, method: str, url: str, on_error: str, json_data: dict = None):
-        """
-        Metodă auxiliară care face un request folosind token-ul.
-        Dacă token-ul nu există, face login. Dacă primim 401, reîncearcă o dată.
-        """
+    async def _request_with_token(self, method: str, url: str, on_error: str, json_data: dict = None) -> Optional[Any]:
+        """Execute request with automatic token refresh."""
         if not await self._ensure_token():
             return None
 
-        # Prima încercare
+        # First attempt
         resp_data, status = await self._do_request(method, url, json_data)
         if status != 401:
             return resp_data
 
-        # Dacă e 401, înseamnă invalid_token; încercăm re-login și re-request
-        _LOGGER.debug("%s (Status 401) -> Re-autentificare...", on_error)
+        # Retry logic for 401
+        _LOGGER.debug("%s (Status 401) -> Refreshing token...", on_error)
         self._token = None
         if not await self.async_login():
             return None
 
-        # Token obținut, refacem cererea
         resp_data, status = await self._do_request(method, url, json_data)
         if status == 401:
-            _LOGGER.error("%s (Status 401 persistent) -> Abandon.", on_error)
+            _LOGGER.error("%s (Status 401 persistent) -> Abort.", on_error)
             return None
 
         return resp_data
 
     async def _do_request(self, method: str, url: str, json_data: dict = None):
-        """
-        Efectuează o cerere (GET/POST) cu token-ul curent (dacă există).
-        Returnează tuple (resp_data, status).
-        """
+        """Perform the actual HTTP request."""
         headers = {**HEADERS_POST}
         if self._token:
             headers["Authorization"] = f"Bearer {self._token}"
@@ -284,13 +280,12 @@ class EonApiClient:
                     try:
                         return (await resp.json()), resp.status
                     except Exception:
-                        # Unele endpoint-uri pot returna text simplu sau gol
                         return (await resp.text()), resp.status
                 else:
                     text = await resp.text()
                     if resp.status != 401:
-                         _LOGGER.error("%s %s eșuat. Status=%s, Răspuns=%s", method, url, resp.status, text)
+                         _LOGGER.error("%s %s failed. Status=%s, Response=%s", method, url, resp.status, text)
                     return None, resp.status
         except Exception as e:
-            _LOGGER.error("Eroare request %s %s: %s", method, url, e)
+            _LOGGER.error("Request error %s %s: %s", method, url, e)
             return None, 0

@@ -21,7 +21,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     _LOGGER.debug("Inițializarea globală a integrării %s", DOMAIN)
     return True
 
-PLATFORMS = ["sensor", "button"]
+PLATFORMS = ["sensor", "button", "binary_sensor"]
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Configurează integrarea pentru o anumită intrare (config entry)."""
@@ -57,6 +57,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # Încărcăm platformele
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Configurare servicii
+    await async_setup_services(hass, entry)
+
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
@@ -67,8 +70,61 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
         hass.data[DOMAIN].pop(entry.entry_id)
     return unload_ok
 
-async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry):
-    """Reîncarcă intrarea după reconfigurare."""
-    _LOGGER.debug("Reîncărcarea intrării pentru %s", DOMAIN)
-    await async_unload_entry(hass, entry)
     await async_setup_entry(hass, entry)
+
+async def async_setup_services(hass: HomeAssistant, entry: ConfigEntry):
+    """Set up custom services."""
+    coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
+    
+    async def get_last_invoice(call):
+        """Download the last invoice."""
+        _LOGGER.debug("Service download_last_invoice called.")
+        
+        # 1. Identify last invoice from paid list (usually most relevant)
+        invoices = coordinator.data.get("paid_invoices_list", [])
+        if not invoices:
+            _LOGGER.warning("No paid invoices found.")
+            return
+
+        # Sort by date descending if needed, but API usually returns recent first
+        # Assuming first item is latest
+        last_invoice = invoices[0]
+        invoice_number = last_invoice.get("invoiceNumber")
+        
+        if not invoice_number:
+            _LOGGER.error("Could not determine invoice number.")
+            return
+
+        # 2. Download PDF
+        pdf_content = await coordinator.api_client.async_get_invoice_pdf(
+            cod_incasare=coordinator.cod_incasare,
+            invoice_number=invoice_number
+        )
+
+        if not pdf_content:
+            _LOGGER.error("Failed to download PDF content.")
+            return
+
+        # 3. Save to disk (in /config/www/invoices or similar)
+        # We'll save to <config_dir>/www/eon_invoices/
+        output_dir = hass.config.path("www", "eon_invoices")
+        import os
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        filename = f"{output_dir}/factura_{invoice_number}.pdf"
+        
+        def save_file():
+            with open(filename, "wb") as f:
+                f.write(pdf_content)
+        
+        await hass.async_add_executor_job(save_file)
+        _LOGGER.info("Invoice saved to %s", filename)
+        
+        # Notification (optional)
+        hass.components.persistent_notification.create(
+            f"Factura {invoice_number} a fost descărcată în {filename}",
+            title="E-ON Factura Descărcată"
+        )
+
+    hass.services.async_register(DOMAIN, "download_last_invoice", get_last_invoice)

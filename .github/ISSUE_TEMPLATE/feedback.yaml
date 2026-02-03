@@ -2,7 +2,7 @@ name: Feedback
 description: Oferiți feedback despre integrarea EON România sau sugerați îmbunătățiri.
 title: "Titlul propunerii sau al observației dvs."
 labels:
-  - îmbunătățire
+  - feedback
 body:
   - type: markdown
     attributes:

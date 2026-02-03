@@ -1,0 +1,25 @@
+header:
+  license:
+    spdx-id: MIT
+    copyright-owner: tbutiu
+
+  paths-ignore:
+    - '**/*.md'
+    - '**/*.json'
+    - '**/*.yaml'
+    - '**/*.yml'
+    - 'hacs.json'
+    - 'manifest.json'
+    - '.gitignore'
+    - 'LICENSE'
+    - 'OWNERS'
+    - 'system/**'
+    - 'venv/**'
+    - '.git/**'
+    - '.github/**'
+    - '**/*.log'
+    - '**/*.js'
+    - '**/*.css'
+    - '**/*.html'
+
+  comment: on-failure
