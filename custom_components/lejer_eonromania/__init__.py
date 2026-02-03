@@ -52,7 +52,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     session = async_get_clientsession(hass)
     username = entry.data["username"]
     password = entry.data["password"]
-    cod_incasare = entry.data["cod_incasare"]
     update_interval = entry.options.get("update_interval", DEFAULT_UPDATE_INTERVAL)
 
     api_client = EonApiClient(session, username, password)
@@ -61,7 +60,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     coordinator = EonRomaniaCoordinator(
         hass,
         api_client=api_client,
-        cod_incasare=cod_incasare,
         update_interval=update_interval,
     )
 
