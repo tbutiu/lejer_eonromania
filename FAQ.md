@@ -32,7 +32,7 @@ HACS (Home Assistant Community Store) permite instalarea și gestionarea integr�
   - **3. Adaugă repository-ul în HACS**
       - În Home Assistant, mergi la **HACS** din bara laterală.
       - Apasă pe butonul cu **cele trei puncte** din colțul din dreapta sus și selectează **Repositories**.
-      - În secțiunea "Custom repositories", introdu URL-ul repository-ului extern (de exemplu, `https://github.com/autorul-integarii/nume-integrare`).
+      - În secțiunea "Custom repositories", introdu URL-ul repository-ului extern (de exemplu, `https://github.com/tbutiu/lejer_eonromania`).
       - Selectează tipul de repository:
         - **Integration** pentru integrări.
         - **Plugin** pentru module front-end.
@@ -287,7 +287,7 @@ actions:
           - metadata: {}
             data: {}
             target:
-              entity_id: button.eonromania_trimite_index_XXXXXXXXXXXX
+              entity_id: button.lejer_eonromania_trimite_index_XXXXXXXXXXXX
             action: button.press
         alias: "Optiunea 2: Trimite index la EON la ora 12:00"
 ```
@@ -298,10 +298,10 @@ actions:
    - Automatizarea se rulează doar dacă este **ziua 9 a lunii curente**.
 3. **Acțiuni:**
    - **Ora 9:00**: Se trimite o notificare prin serviciul notify.notify, afișând indexul curent din **input_number.gas_meter_reading**.
-   - **Ora 12:00**: Se apasă butonul **eonromania_trimite_index_XXXXXXXXXXXX** pentru a trimite indexul.
+   - **Ora 12:00**: Se apasă butonul **lejer_eonromania_trimite_index_XXXXXXXXXXXX** pentru a trimite indexul.
 > **Notă:**
 > 
-> Înlocuiește **eonromania_trimite_index_XXXXXXXXXXXX** cu ID-ul exact al butonului utilizat în integrarea ta.
+> Înlocuiește **lejer_eonromania_trimite_index_XXXXXXXXXXXX** cu ID-ul exact al butonului utilizat în integrarea ta.
 >
 > Dacă dorești să schimbi serviciul de notificare, ajustează notify.notify pentru a corespunde setărilor tale.
 

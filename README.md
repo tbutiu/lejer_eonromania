@@ -27,6 +27,32 @@ Această integrare pentru Home Assistant oferă **monitorizare completă** a dat
   - **An**: Anul pentru care se afișează datele.
   - **Plăți lunare**: Totalul plăților efectuate pentru fiecare lună în anul selectat.
 
+### Senzor `Sold Prosumator`:
+- **☀️ Monitorizare Prosumatori**:
+  - Afișează soldul pentru prosumatori.
+- **📊 Atribute disponibile**:
+  - **Total sold**: Suma totală de încasat/plătit.
+  - **Detalii facturi**: Lista facturilor prosumator.
+
+### Senzor `Portofel Utilizator`:
+- **💰 Monitorizare Sold**:
+  - Afișează balanța contului utilizator.
+- **📊 Atribute disponibile**:
+  - **Sumă nealocată**: Bani disponibili în cont, nealocați pe facturi.
+  - **Dată actualizare**: Ultima actualizare a soldului.
+
+### Senzor `Planuri Eșalonare`:
+- **📅 Monitorizare Rate**:
+  - Indică numărul de planuri de eșalonare active.
+- **📊 Atribute disponibile**:
+  - **Detalii Plan**: Suma totală, număr de rate, status.
+
+### Senzor `Notificări Plată`:
+- **⚠️ Alerte**:
+  - Indică existența unor notificări de plată urgente.
+- **📊 Atribute disponibile**:
+  - **Detalii notificare**: Suma datorată și data scadenței.
+
 ### Senzor `Citire permisă`:
 - **🔍 Verificare perioadă trimitere**:
     - Afișează dacă perioada de trimitere a indexului este activă.
@@ -45,15 +71,6 @@ Această integrare pentru Home Assistant oferă **monitorizare completă** a dat
   - **Valori lunare ale consumului**: Exemplu: `Convenție pentru luna ianuarie: 10 mc`.
   - **Număr de luni configurate**: Totalul lunilor cu valori > 0.
 - **🔄 Starea senzorului**: Reprezintă numărul de luni configurate. Exemplu: `3` (pentru 3 luni configurate).
-- **🎯 Exemplu de afișare**:
-
-```text
-Stare principală: 3
-Atribute:
-  Convenție pentru luna ianuarie: 10 mc
-  Convenție pentru luna februarie: 5 mc
-  Convenție pentru luna martie: 15 mc
-```
 
 ### Senzor `Date contract`:
   - **🔍 Monitorizare generală**:

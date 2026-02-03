@@ -13,7 +13,7 @@ Pentru a activa logarea detaliată pentru integrarea ta personalizată, editeaz�
 logger:
   default: warning
   logs:
-    custom_components.eonromania: debug
+    custom_components.lejer_eonromania: debug
     homeassistant.const: critical
     homeassistant.loader: critical
     homeassistant.helpers.frame: critical
@@ -32,7 +32,7 @@ Logurile se află, de obicei, în fișierul `home-assistant.log`, în directorul
 ### Filtrarea logurilor
 Pentru a găsi rapid informațiile relevante despre integrarea ta, poți folosi comanda:
 ```bash
-grep 'custom_components.eonromania' home-assistant.log
+grep 'custom_components.lejer_eonromania' home-assistant.log
 ```
 
 ---
