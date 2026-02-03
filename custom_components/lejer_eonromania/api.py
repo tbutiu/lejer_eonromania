@@ -98,14 +98,20 @@ class EonApiClient:
             "Error fetching invoice balance."
         )
 
-    async def async_fetch_account_contracts_list(self, cod_incasare: str) -> Optional[dict]:
-        """Fetch account contracts list using collectiveContract parameter."""
-        payload = {"collectiveContract": cod_incasare, "limit": -1}
+    async def async_fetch_account_contracts_list(self) -> Optional[dict]:
+        """Fetch account contracts list using list-with-subcontracts."""
         return await self._request_with_token(
-            "POST",
+            "GET",
             URLS["account_contracts_list"],
-            "Error fetching account contracts list.",
-            json_data=payload
+            "Error fetching account contracts list."
+        )
+
+    async def async_fetch_unread_messages(self) -> Optional[dict]:
+        """Fetch count of unread messages."""
+        return await self._request_with_token(
+            "GET",
+            URLS["unread_messages"],
+            "Error fetching unread messages count."
         )
 
     async def async_fetch_current_date(self) -> Optional[dict]:

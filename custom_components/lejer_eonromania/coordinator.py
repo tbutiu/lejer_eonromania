@@ -37,7 +37,7 @@ class EonRomaniaCoordinator(DataUpdateCoordinator):
         """Fetch data from API using defined keys."""
         
         # 1. General Data
-        contracts_data = await self.api_client.async_fetch_account_contracts_list(self.cod_incasare)
+        contracts_data = await self.api_client.async_fetch_account_contracts_list()
         user_wallet_data = await self.api_client.async_fetch_user_wallet()
         
         # 2. Specific Data
