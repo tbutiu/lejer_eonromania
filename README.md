@@ -2,239 +2,128 @@
 
 # E-ON România - Integrare pentru Home Assistant 🏠🇷🇴
 
-Această integrare pentru Home Assistant oferă **monitorizare completă** a datelor contractuale și a indexurilor de consum pentru utilizatorii E-ON România. Integrarea este configurabilă prin interfața UI și permite afișarea datelor despre contract, citirea indexurilor curente și arhivarea datelor istorice. 🚀
+Această integrare pentru Home Assistant oferă **monitorizare completă** a datelor E-ON România. Acum suportă **conturi multiple** și **toate contractele** asociate unui singur cont de utilizator! 🚀
 
-## 🌟 Caracteristici
+## 🌟 Noutăți (v2.0)
 
-### Senzor `Arhivă consum`:
-- **📚 Date istorice**:
-  - Afișează consumul total lunar în metri cubi.
-- **📊 Atribute disponibile**:
-  - **An**: Anul pentru care se afișează datele.
-  - **Consum lunar**: Cantitatea de gaz consumată pentru fiecare lună, exprimată în metri cubi.
+- **🔐 Autentificare Simplificată**: Te loghezi doar cu email și parolă. Fără coduri de încasare manuale!
+- **multi-Contract**: Un singur cont -> Toate locurile de consum. Integrarea detectează automat toate contractele tale.
+- **🔢 Input Index Integrat**: Nu mai ai nevoie de helperi. Fiecare contract are propriul câmp pentru introducerea indexului.
 
-### Senzor `Arhivă index`:
-- **📚 Date istorice**:
-  - Afișează indexurile lunare pentru fiecare an disponibil.
-- **📊 Atribute disponibile**:
-  - **An**: Anul pentru care se afișează datele.
-  - **Indexuri lunare**: Indexurile consumului pentru fiecare lună.
+---
 
-### Senzor `Arhivă plăți`:
-- **📚 Date istorice**:
-  - Afișează plățile lunare pentru fiecare an disponibil.
-- **📊 Atribute disponibile**:
-  - **An**: Anul pentru care se afișează datele.
-  - **Plăți lunare**: Totalul plăților efectuate pentru fiecare lună în anul selectat.
+## 🌟 Caracteristici Principale
 
-### Senzor `Sold Prosumator`:
-- **☀️ Monitorizare Prosumatori**:
-  - Afișează soldul pentru prosumatori.
-- **📊 Atribute disponibile**:
-  - **Total sold**: Suma totală de încasat/plătit.
-  - **Detalii facturi**: Lista facturilor prosumator.
+### ⚡ Monitorizare Contracte & Consum
+Fiecare contract este reprezentat ca un **Device** separat în Home Assistant, grupând toți senzorii relevanți:
 
-### Senzor `Portofel Utilizator`:
-- **💰 Monitorizare Sold**:
-  - Afișează balanța contului utilizator.
-- **📊 Atribute disponibile**:
-  - **Sumă nealocată**: Bani disponibili în cont, nealocați pe facturi.
-  - **Dată actualizare**: Ultima actualizare a soldului.
+- **Senzor `Date contract`**: Informații detaliate (preț kWh, adresă, distribuitor, date expirare revizii).
+- **Senzor `Index curent`**: Ultimul index citit, perioada de citire activă.
+- **Senzor `Sold & Facturi`**:
+    - **Factură restantă**: Alertă dacă există facturi neplătite.
+    - **Notificări Plată**: Sume scadente.
+    - **Sold Prosumator**: Pentru cei care injectează în rețea.
+    - **Portofel Utilizator**: Soldul contului MyLine.
 
-### Senzor `Planuri Eșalonare`:
-- **📅 Monitorizare Rate**:
-  - Indică numărul de planuri de eșalonare active.
-- **📊 Atribute disponibile**:
-  - **Detalii Plan**: Suma totală, număr de rate, status.
+### 📅 Istoric & Arhive
+- **Arhivă consum**: Istoric lunar consum (mc/kWh).
+- **Arhivă index**: Istoric indexuri declarate.
+- **Arhivă plăți**: Istoricul plăților efectuate.
+- **Convenție consum**: Detalii despre convenția de consum stabilită.
 
-### Senzor `Notificări Plată`:
-- **⚠️ Alerte**:
-  - Indică existența unor notificări de plată urgente.
-- **📊 Atribute disponibile**:
-  - **Detalii notificare**: Suma datorată și data scadenței.
-
-### Senzor `Citire permisă`:
-- **🔍 Verificare perioadă trimitere**:
-    - Afișează dacă perioada de trimitere a indexului este activă.
-- **📊 Atribute disponibile**:
-    - **ID intern citire contor (SAP)**: Identificator unic pentru punctul de măsurare.
-    - **Perioada permisă pentru trimitere**: Intervalul de timp în care indexul poate fi transmis.
-    - **Cod încasare**: Codul unic al contractului.
-- **🔄 Starea senzorului**:
-    - **Da**: Trimiterea indexului este permisă.
-    - **Nu**: Trimiterea indexului nu este permisă.
-    - **Indisponibil**: Datele nu sunt disponibile.
-
-### Senzor `Convenție consum`:
-- **📊 Gestionarea consumului lunar**: Afișează detalii despre convenția de consum pe luni, incluzând doar lunile cu valori mai mari de 0.
-- **📄 Atribute disponibile**:
-  - **Valori lunare ale consumului**: Exemplu: `Convenție pentru luna ianuarie: 10 mc`.
-  - **Număr de luni configurate**: Totalul lunilor cu valori > 0.
-- **🔄 Starea senzorului**: Reprezintă numărul de luni configurate. Exemplu: `3` (pentru 3 luni configurate).
-
-### Senzor `Date contract`:
-  - **🔍 Monitorizare generală**:
-      - Afișează informații detaliate despre contractul de furnizare energie.
-  - **📊 Atribute disponibile**:
-      - **Cod încasare**: Codul unic al contractului.
-      - **Cod loc de consum (NLC)**: Identificatorul locației de consum.
-      - **CLC - Cod punct de măsură**: Codul unic al punctului de măsurare.
-      - **Operator de Distribuție (OD)**: Numele operatorului de distribuție.
-      - **Prețuri detaliate**:
-        - **Preț final (fără TVA)**: Valoarea finală fără TVA.
-        - **Preț final (cu TVA)**: Valoarea finală inclusiv TVA.
-        - **Preț furnizare**: Costul pentru furnizarea energiei.
-        - **Tarif reglementat distribuție**: Costul distribuției energiei.
-        - **Tarif reglementat transport**: Costul transportului energiei.
-      - **PCS (Potențial caloric superior)**: Valoarea calorică superioară a energiei.
-      - **Adresă consum**: Adresa locației de consum.
-      - **Verificare instalație**: Data următoarei verificări tehnice a instalației.
-      - **Data inițierii reviziei**: Data la care începe următoarea revizie tehnică.
-      - **Revizie tehnică**: Data expirării următoarei revizii tehnice.
-
-### Senzor `Factură restantă`:
-- **📄 Detalii sold**:
-  - Afișează dacă există facturi restante.
-- **📊 Atribute disponibile**:
-  - **Restanțe pe luna [numele lunii]**: Soldul restant pentru luna respectivă.
-  - **Total sold**: Suma totală a soldului restant, afișată în lei.
-
-### Senzor `Index curent`:
-  - **🔍 Monitorizare date index**:
-      - Afișează informații detaliate despre indexul curent al contorului.
-  - **📊 Atribute disponibile**:
-      - **Numărul dispozitivului**: ID-ul dispozitivului asociat contorului.
-      - **Data de început a citirii**: Data de început a perioadei de citire.
-      - **Data de final a citirii**: Data de final a perioadei de citire.
-      - **Citirea contorului permisă**: Indică dacă citirea poate fi realizată în perioada curentă.
-      - **Permite modificarea citirii**: Indică dacă indexul citit poate fi modificat.
-      - **Dispozitiv inteligent**: Specifică dacă dispozitivul este un contor inteligent.
-      - **Tipul citirii curente**: Tipul citirii efectuate (de exemplu, autocitire).
-      - **Citire anterioară**: Valoarea minimă a citirii anterioare.
-      - **Ultima citire validată**: Ultima valoare validată a citirii.
-      - **Index propus pentru facturare**: Valoarea indexului propus pentru facturare.
-      - **Trimis la**: Data și ora la care a fost transmisă ultima citire.
-      - **Poate fi modificat până la**: Data și ora până la care citirea poate fi modificată.
-
-
-### Buton `Trimite index`:
-- **🔘 Buton interactiv**:
-    - Permite trimiterea indexului către API-ul E-ON România, utilizabil atât prin interfața Home Assistant, cât și prin automatizări.
-- **📊 Funcționalități**:
-    - Determină valoarea indexului din entitatea `input_number.gas_meter_reading`.
-    - Validează și trimite indexul folosind endpoint-ul API.
-
+### 📤 Transmitere Index (Nou!)
+- **Entitate `Index de transmis` (`number`)**: Câmp dedicat pentru fiecare contract unde introduci indexul.
+- **Buton `Trimite index` (`button`)**: Trimite valoarea introdusă direct către E-ON.
+- **Senzor `Citire permisă`**: Îți spune când poți transmite indexul.
 
 ---
 
 ## ⚙️ Configurare
 
-### 🛠️ Interfața UI:
-1. Adaugă integrarea din meniul **Setări > Dispozitive și Servicii > Adaugă Integrare**.
-2. Introdu datele contului E-ON:
-   - **Nume utilizator**: username-ul contului tău E-ON.
-   - **Parolă**: parola asociată contului tău.
-   - ~~**Cod încasare**: dacă codul este format din 10 cifre, de exemplu `2100023241`, trebuie să adaugi două zerouri la început. Rezultatul final ar trebui să fie `002100023241`.~~
-   - **Cod încasare**: Se găsește pe factura ta
-     - Nu mai este nevoie să introduci manual 00 înaintea codului de încasare! Dacă codul tău este format din 10 cifre (de exemplu `2100023241`), funcția de corectare implementată va adăuga automat două zerouri la început. Rezultatul final va deveni `002100023241`, astfel încât autentificarea să fie corectă și fără erori.
-3. Specifică intervalul de actualizare (implicit: 3600 secunde).
+### 🛠️ Configurare prin UI (Recomandat)
+1. Mergi la **Settings > Devices & Services > Add Integration**.
+2. Caută **E-ON România**.
+3. Introdu:
+   - **Nume utilizator**: Adresa de email a contului E-ON MyLine.
+   - **Parolă**: Parola contului.
+4. **Gata!** Integrarea va descoperi automat toate contractele tale și va crea dispozitive pentru ele.
 
-### Observații:
-- Verifică datele de autentificare înainte de salvare.
-- Asigură-te că formatul codului de încasare este corect pentru a evita problemele de conectare.
+~~*Notă: Nu mai este necesar Codul de Încasare la configurare!*~~
 
 ---
 
 ## 🚀 Instalare
 
-### 💡 Instalare prin HACS:
-1. Adaugă [depozitul personalizat](https://github.com/tbutiu/lejer_eonromania) în HACS. 🛠️
-2. Caută integrarea **E-ON România** și instaleaz-o. ✅
-3. Repornește Home Assistant și configurează integrarea. 🔄
+### 💡 Prin HACS (Recomandat):
+1. Adaugă [depozitul personalizat](https://github.com/tbutiu/lejer_eonromania) în HACS > Integrations > Custom repositories.
+2. Caută **E-ON România** și instalează.
+3. Restart Home Assistant.
 
-### ✋ Instalare manuală:
-1. Clonează sau descarcă [depozitul GitHub](https://github.com/tbutiu/lejer_eonromania). 📂
-2. Copiază folderul `custom_components/lejer_eonromania` în directorul `custom_components` al Home Assistant. 🗂️
-3. Repornește Home Assistant și configurează integrarea. 🔧
+### ✋ Manual:
+1. Descarcă [ultima versiune](https://github.com/tbutiu/lejer_eonromania/releases).
+2. Copiază folderul `custom_components/lejer_eonromania` în folderul `config/custom_components` al serverului tău.
+3. Restart Home Assistant.
 
 ---
 
-## ✨ Exemple de utilizare
+## ✨ Exemple de Utilizare
 
-### 🔔 Automatizare pentru Index:
-Creează o automatizare pentru a primi notificări când indexul curent depășește o valoare specificată.
+### 📤 Automatizare Index
+Trimite o notificare pe telefon când se deschide perioada de citire pentru un contract.
 
 ```yaml
-alias: Notificare Index Ridicat
-description: Notificare dacă indexul depășește 1000
+alias: "Notificare Citire E-ON"
 trigger:
-  - platform: numeric_state
-    entity_id: sensor.lejer_eonromania_index_curent_00XXXXXXXXXX
-    above: 1000
+  - platform: state
+    entity_id: sensor.lejer_eonromania_citire_permisa_00XXXXXXXXXX
+    to: "Da"
 action:
-  - service: notify.mobile_app_your_phone
+  - service: notify.mobile_app_phone
     data:
-      title: "Index Ridicat Detectat! ⚡"
-      message: "Indexul curent este {{ states('sensor.lejer_eonromania_index_curent_00XXXXXXXXXX') }}."
-mode: single
+      title: "E-ON: Se poate transmite indexul! 📝"
+      message: "Perioada de citire este deschisă pentru locul de consum X."
 ```
 
-### 🔍 Card pentru Dashboard:
-Afișează datele despre contract, indexuri și arhivă pe interfața Home Assistant.
+### 🔢 Card Transmitere Index
+Adaugă un card simplu în dashboard pentru a trimite indexul rapid.
 
 ```yaml
 type: entities
-title: Monitorizare E-ON România
+title: Transmitere Index Gaz
 entities:
-  - entity: sensor.lejer_eonromania_date_contract_00XXXXXXXXXX
-    name: Date Contract
-  - entity: sensor.lejer_eonromania_index_curent_00XXXXXXXXXX
-    name: Index Curent
-  - entity: sensor.lejer_eonromania_arhiva_index_00XXXXXXXXXX_2024
-    name: Arhivă 2024
+  - entity: sensor.lejer_eonromania_citire_permisa_00XXXXXXXXXX
+    name: Status
+  - entity: number.lejer_eonromania_index_input_00XXXXXXXXXX
+    name: Introdu Index
+  - entity: button.lejer_eonromania_trimite_index_00XXXXXXXXXX
+    name: Trimite Acum
 ```
 
 ---
 
-# Întrebări frecvente
+## ❓ Întrebări Frecvente (FAQ)
 
-Ai întrebări despre utilizarea sau configurarea integrării? Găsește răspunsuri la întrebări precum:
+- **Am mai multe contracte, trebuie să configurez de mai multe ori?**  
+  Nu. O singură configurare cu contul tău de email va aduce toate contractele automat.
 
-- **Cum să adaug integrarea în Home Assistant?**
-- **Am cont DUO, pot folosi integrarea?**
-- **Ce înseamnă index curent?**
-- **Nu îmi apare indexul curent. De ce?**
-- **Nu îmi apare senzorul citire permisă. De ce?**
-- **Vreau să trimit indexul de la gaz de forma automată. De ce am nevoie?**
-- **Am instalat un cititor de contor gaz. Cum fac automatizarea?**
+- **Unde găsesc indexul de transmis?**  
+  Caută entitatea `number.lejer_eonromania_index_input_...` asociată dispozitivului contractului tău.
 
-Consultă fișierul [FAQ.md](./FAQ.md) pentru ghiduri detaliate și soluții pas cu pas! 😊
+Vezi [FAQ.md](./FAQ.md) pentru mai multe detalii.
 
 ---
 
-## ☕ Susține dezvoltatorul
+## ☕ Susține Proiectul
 
-Dacă ți-a plăcut această integrare și vrei să sprijini munca depusă, **invită-mă la o cafea**! 🫶  
-Nu costă nimic, iar contribuția ta ajută la dezvoltarea viitoare a proiectului. 🙌  
+Dacă această integrare îți face viața mai ușoară, poți susține dezvoltarea!
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Susține%20dezvoltatorul-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/lejer)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Donează-orange?style=for-the-badge&logo=buy-me-a-coffee)](https://buymeacoffee.com/lejer)
 
-Mulțumesc pentru sprijin și apreciez fiecare gest de susținere! 🤗
-
---- 
-
-
-## 🧑‍💻 Contribuții
-
-Contribuțiile sunt binevenite! Simte-te liber să trimiți un pull request sau să raportezi probleme [aici](https://github.com/tbutiu/lejer_eonromania/issues).
+Mulțumesc! 🤗
 
 ---
 
-## 👏 Credite
+## 🧑‍💻 Contribuții & Credite
 
-Acest proiect a fost inițiat de [@cnecrea](https://github.com/cnecrea), căruia îi mulțumim pentru munca depusă la versiunea originală! 🚀
-
----
-
-## 🌟 Suport
-Dacă îți place această integrare, oferă-i un ⭐ pe [GitHub](https://github.com/tbutiu/lejer_eonromania/)! 😊
+Proiect Open Source. Contribuțiile sunt binevenite prin Pull Requests.
+Bazat pe munca inițială a lui [@cnecrea](https://github.com/cnecrea). Dezvoltat și menținut de [@tbutiu](https://github.com/tbutiu).
