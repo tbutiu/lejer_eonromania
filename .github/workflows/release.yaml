@@ -1,4 +1,5 @@
 name: "Release"
+run-name: "Release ${{ inputs.tag_name || github.ref_name }}"
 
 on:
   push:
@@ -16,6 +17,9 @@ jobs:
     runs-on: "ubuntu-latest"
     permissions:
       contents: write
+    env:
+      # This variable unifies the logic: uses input if manual, or ref_name if triggered by tag
+      RELEASE_TAG: ${{ inputs.tag_name || github.ref_name }}
     steps:
       - name: "Checkout"
         uses: "actions/checkout@v4"
@@ -36,9 +40,9 @@ jobs:
       - name: "Publish"
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.tag_name || github.ref_name }}
+          tag_name: ${{ env.RELEASE_TAG }}
           draft: true
           files: ${{ runner.temp }}/lejer_eonromania.zip
           body: >
-            [![Downloads](https://img.shields.io/github/downloads/tbutiu/lejer_eonromania/${{ github.ref_name }}/total?style=flat-square)](https://github.com/tbutiu/lejer_eonromania/releases)
+            [![Downloads](https://img.shields.io/github/downloads/tbutiu/lejer_eonromania/${{ env.RELEASE_TAG }}/total?style=flat-square)](https://github.com/tbutiu/lejer_eonromania/releases)
           generate_release_notes: true
