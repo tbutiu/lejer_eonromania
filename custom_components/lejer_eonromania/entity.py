@@ -59,7 +59,8 @@ class EonEntity(CoordinatorEntity):
         
         locality_name = "Necunoscut"
         if address_obj:
-             locality_name = address_obj.get("locality", {}).get("localityName", "Necunoscut")
+             # address_obj.get("locality") can be None, so we default to {} before accessing .get("localityName")
+             locality_name = (address_obj.get("locality") or {}).get("localityName", "Necunoscut")
 
         full_address = f"{street_type} {street_name} {street_no} ap. {apartment}, {locality_name}"
 

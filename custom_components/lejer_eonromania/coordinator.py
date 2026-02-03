@@ -70,25 +70,19 @@ class EonRomaniaCoordinator(DataUpdateCoordinator):
         # 2. Iterate over each contract found (Flattening sub-contracts)
         processed_contracts = []
         for contract in contracts_list:
-            # Add main contract if it seems valid (single) or just adding to process list
-            # But "DUO" parent contracts often return 400 for specific data.
-            # Strategy: Add ALL, but handle 400 gracefully.
-            # BETTER STRATEGY: Extract subcontracts and process them as individual contracts.
-            
             # Check for subcontracts
             if sub_contracts := contract.get("subContracts"):
+                # If subcontracts exist, this is likely a Collective/DUO contract.
+                # Processing the parent usually results in API errors (3230 Collective Contract not permitted).
+                # We should ONLY process the subcontracts.
                 for sub in sub_contracts:
-                     # Create a synthetic contract object or just use the sub object 
-                     # but ensure it has the structure we expect (details in 'contractDetails'?)
-                     # The API returns subcontracts as objects that look like contractDetails ??
-                     # Let's assume sub is a dict with 'accountContract' etc.
-                     # We wrap it in a structure compatible with our logic if needed, 
-                     # but our logic below looks for 'contractDetails' OR direct keys.
+                     # Subcontracts usually have direct structure
                      processed_contracts.append(sub)
+                
+                # Do NOT append the parent contract if subcontracts were found
+                continue
                      
-            # Include the parent contract too? 
-            # If it's a collective contract (type=...?), requests might fail.
-            # But let's try to process it. If API calls fail, we log and continue.
+            # Include the contract if it has no subcontracts (Standard contract)
             processed_contracts.append(contract)
             
         data_per_contract = {}

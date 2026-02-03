@@ -96,7 +96,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, asyn
 
         # Payments History
         payments_data = contract_data_slice.get(KEY_PAYMENTS, {})
-        payments_list = payments_data.get("list", []) if payments_data else []
+        if isinstance(payments_data, list):
+             payments_list = payments_data
+        else:
+             payments_list = payments_data.get("list", []) if payments_data else []
         
         if payments_list:
             payments_by_year = defaultdict(list)
